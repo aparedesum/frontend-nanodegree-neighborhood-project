@@ -9,9 +9,17 @@
   </head>
 
   <body>  	  
-    <div>
+    <div>      
+
+      <input id="filter" data-bind="value: filter, valueUpdate:['afterkeydown']" placeholder="Search..." autofocus />
       
+      <ul data-bind="foreach: filteredMarkers">
+            <li data-bind="text: name"></li>
+      </ul>
+        
     </div>
+
+
     <div id="map"></div>
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAC5OTKPt9XEwXBNmatSH2lUp8I0kr6_tg"></script>
