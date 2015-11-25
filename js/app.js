@@ -57,9 +57,6 @@ var Location = function(data) {
             "<p>" + me.phone() + "</p>";
     });
 
-    me.infowindow = ko.observable(new google.maps.InfoWindow({content: me.content()}));
-
-
     me.marker = ko.observable(new google.maps.Marker({
             position: new google.maps.LatLng(me.location().lat, me.location().lng),
             map: me.map,
@@ -79,27 +76,52 @@ var ViewModel = function() {
         lng: -77.042793
     };
 
+    //init properties
     me.markers = ko.observableArray([]);
     me.filter = ko.observable("");
+    me.infoWindow = ko.observable(new google.maps.InfoWindow({}));
 
-    me.map = new google.maps.Map(document.getElementById('map'), {
-        center: lima,
-        zoom: 12
-    });
+    var mapOptions = {
+        zoom: 12,
+        center: lima,        
+        rotateControl: true,
+
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.TOP_CENTER
+        },
+        zoomControl: true,
+        zoomControlOptions: {
+            position: google.maps.ControlPosition.LEFT_CENTER
+        },
+        scaleControl: true,
+        streetViewControl: true,
+        streetViewControlOptions: {
+            position: google.maps.ControlPosition.LEFT_TOP
+        }
+    }
+
+    me.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
     //add the listener to all Markers
     me.addListenerToMarkers = function(item) {
         var marker = item.marker();
         
         marker.addListener('click', function() {
-            item.infowindow().open(me.map, marker);
-
-            if (item.marker().getAnimation() !== null) {
-                marker.setAnimation(null);
-            } else {
-                marker.setAnimation(google.maps.Animation.BOUNCE);
-            }
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+            me.setInfoWindow(item.content(), me.map, marker);            
+            me.map.panTo(marker.position);
         });
+
+        google.maps.event.addListener(me.infoWindow(),'closeclick',function(){
+            marker.setAnimation(null);          
+        });
+    };
+
+    me.setInfoWindow = function(content, map, marker){
+            me.infoWindow().setContent(content);
+            me.infoWindow().open(map, marker);
     };
 
     //read the locations array and push the values in me.markers array
@@ -123,8 +145,10 @@ var ViewModel = function() {
     me.filteredMarkers = ko.computed(function() {
         var filter = me.filter().toLowerCase();        
         me.clearMarkers();
-        
+        me.setInfoWindow(null, null, null);                
+
         var result = [];
+
         if (!filter) {            
             result = me.markers();
         } else {
@@ -133,13 +157,31 @@ var ViewModel = function() {
             });
         }
 
-        result.forEach(function(data){
-            data.marker().setMap(me.map);
-        });
+        if(result.length===0){
+            result.push({name:"No results..."});
+        } else {
+            result.forEach(function(data){
+                data.marker().setMap(me.map);
+            });
+        }    
 
         return result;
     }, me);
-};
 
+   me.cleanAnimations = function (){
+        me.markers().forEach(function(marker) {
+        marker.marker().setAnimation(null);
+        });
+   }
+
+    me.focusMarker = function(location) {        
+        if( location!==null && location.hasOwnProperty("marker")){        
+            me.cleanAnimations();
+            me.setInfoWindow(location.content(), me.map, location.marker());
+            me.map.panTo(location.marker().position);
+            location.marker().setAnimation(google.maps.Animation.BOUNCE);  
+        }
+  };
+};
 
 ko.applyBindings(new ViewModel());

@@ -8,20 +8,20 @@
     	<link rel="stylesheet" href="css/style.css">
   </head>
 
-  <body>  	  
-    <div>      
+  <body>
 
-      <input id="filter" data-bind="value: filter, valueUpdate:['afterkeydown']" placeholder="Search..." autofocus />
-      
-      <ul data-bind="foreach: filteredMarkers">
-            <li data-bind="text: name"></li>
-      </ul>
-        
+    <header class="inputFilterContainer">      
+      <input class="inputfilter" id="filter" data-bind="value: filter, valueUpdate:['afterkeydown']" placeholder="Search Location ..." autofocus />          
+    </header>
+
+    <div class="listContainer">       
+        <ul data-bind="foreach: filteredMarkers">
+              <li data-bind="click: $parent.focusMarker"><span data-bind="text: name"></span></li>
+        </ul>
     </div>
-
-
-    <div id="map"></div>
-
+  
+    <div id="map" class="mapContainer"></div>
+    
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAC5OTKPt9XEwXBNmatSH2lUp8I0kr6_tg"></script>
     <script src="js/lib/knockout-3.2.0.js"></script>
     <script src="js/lib/jquery.min.js"></script>
