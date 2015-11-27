@@ -1,7 +1,7 @@
 "use strict";
 
 //raw data
-var locations = [{
+var arrayLocation = [{
     name: "National Stadium",
     address: "Jose Diaz s/n,Lima 15046",
     phone: "4316190",
@@ -90,9 +90,10 @@ var ViewModel = function() {
     };
 
     //init properties
-    me.markers = ko.observableArray([]);
+    me.locations = ko.observableArray([]);
     me.filter = ko.observable("");
     me.infoWindow = ko.observable(new google.maps.InfoWindow({}));
+    me.recomendationsResult = ko.observableArray([]);
 
     var mapOptions = {
         zoom: 12,
@@ -118,13 +119,15 @@ var ViewModel = function() {
     me.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
     //add the listener to all Markers
-    me.addListenerToMarkers = function(item) {
-        var marker = item.marker();
+    me.addListenerToMarkers = function(location) {
+        var marker = location.marker();
         
         marker.addListener('click', function() {
+            me.cleanAnimations();
             marker.setAnimation(google.maps.Animation.BOUNCE);
-            me.setInfoWindow(item.content(), me.map, marker);            
+            me.setInfoWindow(location.content(), me.map, marker);            
             me.map.panTo(marker.position);
+            me.invokeRecomendations(location);
         });
 
         google.maps.event.addListener(me.infoWindow(),'closeclick',function(){
@@ -138,15 +141,15 @@ var ViewModel = function() {
     };
 
     //read the locations array and push the values in me.markers array
-    locations.forEach(function(data) {
-        var item = new Location(data);
-        me.markers.push(item);
-        me.addListenerToMarkers(item);
+    arrayLocation.forEach(function(data) {
+        var location = new Location(data);
+        me.locations.push(location);
+        me.addListenerToMarkers(location);
     });
 
     me.setMapOnAll = function(map) {
-        ko.utils.arrayForEach(me.markers(), function(item) {
-            item.marker().setMap(map);
+        ko.utils.arrayForEach(me.locations(), function(location) {
+            location.marker().setMap(map);
         });
     };
 
@@ -155,7 +158,7 @@ var ViewModel = function() {
     };
 
     //get the filtered values after typing in the input tag
-    me.filteredMarkers = ko.computed(function() {
+    me.filteredLocations = ko.computed(function() {
         var filter = me.filter().toLowerCase();        
         me.clearMarkers();
         me.setInfoWindow(null, null, null);                
@@ -163,9 +166,9 @@ var ViewModel = function() {
         var result = [];
 
         if (!filter) {            
-            result = me.markers();
+            result = me.locations();
         } else {
-            result = ko.utils.arrayFilter(this.markers(), function(item) {
+            result = ko.utils.arrayFilter(this.locations(), function(item) {
                 return item.name().toLowerCase().indexOf(filter.toLowerCase()) !== -1;
             });
         }
@@ -182,20 +185,22 @@ var ViewModel = function() {
     }, me);
 
    me.cleanAnimations = function (){
-        me.markers().forEach(function(marker) {
-        marker.marker().setAnimation(null);
+        me.locations().forEach(function(location) {
+            location.marker().setAnimation(null);
         });
    }
-
-   me.foursquareResult = ko.observableArray([]);
-
-    me.focusMarker = function(location) {        
+   
+    me.focusLocation = function(location) {        
         if( location!==null && location.hasOwnProperty("marker")){        
             me.cleanAnimations();
             me.setInfoWindow(location.content(), me.map, location.marker());
             me.map.panTo(location.marker().position);
             location.marker().setAnimation(google.maps.Animation.BOUNCE);
+            me.invokeRecomendations(location);
+        }
+  };
 
+  me.invokeRecomendations = function(location){
             var url = "https://api.foursquare.com/v2/venues/search";
             
             var params = {};
@@ -211,30 +216,49 @@ var ViewModel = function() {
                 dataType: "json",
                 url: url,
                 data: params
+            }).
+            done(function(data) {
+              me.successFromRecomendations(data);                
+            }).
+            fail(function( jqXHR, textStatus ) {                
+             me.failureFromRecomendations(jqXHR, textStatus);
             });
-
-            request.done(function(data) {
-              
-              console.log(data.response); 
-
-               if(data.response!==null){
-                    var venues = data.response.venues;
-                    me.foursquareResult = ko.observableArray([]);
-
-                    venues.forEach(function(venue){
-                        me.foursquareResult().push(new Recomendation(venue));
-                    });
-              }
-              console.log(me.foursquareResult());  
-
-            });
-             
-            request.fail(function( jqXHR, textStatus ) {                
-              alert( "Problems loading foursquare recommendations, pleasy try later");
-            });
-
-        }
   };
+
+  me.successFromRecomendations = function (data){
+    if(data.response!==null){
+        var recomendatiosContainer = $("#listRecomendations");
+        recomendatiosContainer.empty();
+        var venues = data.response.venues;
+        //me.recomendationsResult = ko.observableArray([]);
+
+        venues.forEach(function(venue){
+
+            //me.recomendationsResult.push();
+            var recomendation = new Recomendation(venue);
+            recomendatiosContainer.append("<li>"+recomendation.name()+"</li>");
+
+        });
+
+
+    }
+    
+  };
+
+  me.failureFromRecomendations = function (jqXHR, textStatus){
+    alert( "Problems loading foursquare recommendations, pleasy try later");
+  };
+
+ me.focusRecomendation = function(location) {        
+        /*if( location!==null && location.hasOwnProperty("marker")){        
+            me.cleanAnimations();
+            me.setInfoWindow(location.content(), me.map, location.marker());
+            me.map.panTo(location.marker().position);
+            location.marker().setAnimation(google.maps.Animation.BOUNCE);
+            me.invokeRecomendations(location);
+        }*/
+  };
+
 };
 
 ko.applyBindings(new ViewModel());

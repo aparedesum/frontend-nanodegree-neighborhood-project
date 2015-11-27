@@ -30,7 +30,7 @@ html, body {
   	width: 100%;
 }
 
-.listContainer{
+.listContainer {
 	display: block;
 	width: 20%;
 	margin-left: auto;
@@ -55,11 +55,11 @@ li span {
 
 .mapContainer {
 	height: 80%;	
-	width: 80%;
+	width: 80%;	
+
 }
 
-.foursquareContainer {
-	height: 15%;	
+.recomendationsContainer {
 	width: 100%;
 }
 
@@ -74,13 +74,8 @@ li span {
 		order: 2;
 	}
 
-	.foursquareContainer{
-		flex: 1 100%;
-		order: 3;
-	}
-
 	.mapContainer{		
 		flex: 1 100%;
-		order: 4;
+		order: 2;
 	}
 }
