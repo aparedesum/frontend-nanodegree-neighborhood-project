@@ -3,7 +3,7 @@ Neighborhood Map Project
 
 About:
 
-This project display a map with 5 markers in Lima city, and when you click on one of those markers, it uses foursquare api for getting info about places near the selected location.
+This project displays a map with 5 markers in Lima city, and when you click on one of those markers, it uses foursquare api for getting info about places near the selected location.
 
 Also, it includes a search bar for filtering the locations.
 
