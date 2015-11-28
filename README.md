@@ -3,10 +3,12 @@ Neighborhood Map Project
 
 About:
 
-This project shows 5 locations in my city-Lima, and when you click on one of them, it uses foursquare api for getting info about places near the selected location
-It includes a search bar for filtering the locations.
+This project display a map with 5 markers in Lima city, and when you click on one of those markers, it uses foursquare api for getting info about places near the selected location.
+
+Also, it includes a search bar for filtering the locations.
 
 How to run it:
+
 1. Download the entire project.
 2. Open index.html in your favourite browser.
 
