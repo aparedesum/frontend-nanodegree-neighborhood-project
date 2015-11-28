@@ -18,10 +18,12 @@
         <ul data-bind="foreach: filteredLocations">
               <li data-bind="click: $parent.focusLocation"><span data-bind="text: name"></span></li>
         </ul>
-
+        <h2>Near places</h2>
         <div id="recomendations" class="recomendationsContainer">
-          <ul id="listRecomendations">
-          </ul>   
+          <ul data-bind="foreach: recomendationsResult">
+              <li data-bind="click: $parent.focusRecomendation"><span data-bind="text: name"></span></li>
+        </ul>
+  
         </div>
     </div>
   
