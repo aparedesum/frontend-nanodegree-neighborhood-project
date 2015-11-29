@@ -13,6 +13,13 @@ How to run it:
 2. Open index.html in your favourite browser.
 
 
+Additional:
+
+
+I have used gulp for minifying js and css files.
+
+
+
 Resources:
 
 * Knockout.js documentation
