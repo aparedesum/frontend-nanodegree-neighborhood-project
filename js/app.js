@@ -77,8 +77,6 @@ var ViewModel = function() {
 
     //get the filtered values after typing in the input field
     me.filteredLocations = ko.computed(function() {
-        var filter = me.filter().toLowerCase();
-
         me.removeAnimations();
         me.infoWindow().close();
 
@@ -183,4 +181,50 @@ var ViewModel = function() {
     };
 };
 
-ko.applyBindings(new ViewModel());
+
+var map;
+var panorama;
+var bounds;
+
+function initMap(){
+
+    var mapOptions = {
+    zoom: 12,
+    center: lima,
+    rotateControl: true,
+
+    mapTypeControl: true,
+    mapTypeControlOptions: {
+        style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+        position: google.maps.ControlPosition.TOP_CENTER
+    },
+    zoomControl: true,
+    zoomControlOptions: {
+        position: google.maps.ControlPosition.LEFT_CENTER
+    },
+    scaleControl: true,
+    streetViewControl: true,
+    streetViewControlOptions: {
+        position: google.maps.ControlPosition.LEFT_TOP
+    }
+    };
+
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+    panorama = new google.maps.StreetViewPanorama(
+        document.getElementById('pano'), {
+            position: lima,
+            pov: {
+              heading: 34,
+              pitch: 10
+            }
+    });
+
+    bounds = new google.maps.LatLngBounds();
+    ko.applyBindings(new ViewModel());
+
+}
+
+function errorMap(){
+    alert("Problems loading the map, please try later");
+}

@@ -38,40 +38,6 @@ var lima = {
         lng: -77.042793
 };
 
-var mapOptions = {
-    zoom: 12,
-    center: lima,
-    rotateControl: true,
-
-    mapTypeControl: true,
-    mapTypeControlOptions: {
-        style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-        position: google.maps.ControlPosition.TOP_CENTER
-    },
-    zoomControl: true,
-    zoomControlOptions: {
-        position: google.maps.ControlPosition.LEFT_CENTER
-    },
-    scaleControl: true,
-    streetViewControl: true,
-    streetViewControlOptions: {
-        position: google.maps.ControlPosition.LEFT_TOP
-    }
-};
-
-var map = new google.maps.Map(document.getElementById('map'), mapOptions);
-
-var panorama = new google.maps.StreetViewPanorama(
-    document.getElementById('pano'), {
-        position: lima,
-        pov: {
-          heading: 34,
-          pitch: 10
-        }
-});
-
-var bounds = new google.maps.LatLngBounds();
-
 //Model for our raw data
 var Location = function(data) {
     var me = this;
