@@ -19,6 +19,11 @@ h2 {
   	color: white;	
 }
 
+.pano {        
+    height: 100%;
+    width: 30%;
+}
+
 .inputFilterContainer{
 	display: block;
 	margin-left: auto;
@@ -59,9 +64,8 @@ li span {
 }
 
 .mapContainer {
-	height: 80%;	
-	width: 80%;	
-
+	height: 100%;	
+	width: 50%;	
 }
 
 .recomendationsContainer {
@@ -72,15 +76,30 @@ li span {
 	.inputFilterContainer{		
 		flex: 1 100%;	
 		order: 1;
+		height: 5%;
+		margin-top: 0px;
+  		padding: 0px;
 	}
 
 	.listContainer{		
 		flex: 1 100%;	
 		order: 2;
+		height: 25%
+	}
+
+	.recomendationsContainer {
+		display: none;
 	}
 
 	.mapContainer{		
 		flex: 1 100%;
 		order: 2;
+		height: 40%
+	}
+
+	.pano{		
+		flex: 1 100%;
+		order: 3;
+		height: 30%
 	}
 }

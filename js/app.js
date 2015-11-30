@@ -1,15 +1,8 @@
-"use strict";
-
 var ViewModel = function() {
     var me = this;
 
-    //center the map in this position
-    var lima = {
-        lat: -12.046374,
-        lng: -77.042793
-    };
-
     //init properties
+    me.map = map;
     me.locations = ko.observableArray([]);
     me.recomendationsResult = ko.observableArray([]);
     me.filter = ko.observable("");
@@ -24,44 +17,28 @@ var ViewModel = function() {
     params.v = "20151125";
     params.limit = "10";
 
-    var mapOptions = {
-        zoom: 12,
-        center: lima,
-        rotateControl: true,
-
-        mapTypeControl: true,
-        mapTypeControlOptions: {
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: google.maps.ControlPosition.TOP_CENTER
-        },
-        zoomControl: true,
-        zoomControlOptions: {
-            position: google.maps.ControlPosition.LEFT_CENTER
-        },
-        scaleControl: true,
-        streetViewControl: true,
-        streetViewControlOptions: {
-            position: google.maps.ControlPosition.LEFT_TOP
+    me.getContent = function(data) {
+        var href = "";
+        if (data.url()) {
+            href = "<a href='" + data.url() + "'>" + data.url() + "</a>";
         }
-    }
 
-    me.map = new google.maps.Map(document.getElementById('map'), mapOptions);
-
-    me.getContent = function(data){
         return "<h3>" + data.name() + "</h3></a>" +
             "<p>" + data.address() + "</p>" +
-            "<p>" + data.url() + "</p>";
+            href +
+            "<p>" + data.hereNow() + "</p>";
     };
 
     //add the listener to all Location Markers 
     me.addListenerToMarkers = function(location) {
         var marker = location.marker();
 
+        bounds.extend(new google.maps.LatLng(location.location().lat, location.location().lng));
+
         marker.addListener('click', function() {
             me.removeAnimations();
             marker.setAnimation(google.maps.Animation.BOUNCE);
-            me.setInfoWindow(me.getContent(location), me.map, marker);
-            me.map.panTo(marker.position);
+            me.setPanorama(location.location());
             me.searchRecomendations(location);
         });
 
@@ -83,15 +60,11 @@ var ViewModel = function() {
         me.addListenerToMarkers(location);
     });
 
-    me.removeRecomendationsMarkers = function() {
-        ko.utils.arrayForEach(me.recomendationsResult(), function(recomendation) {
-            recomendation.marker.setMap(null);
-        });
-    };
+    me.map.fitBounds(bounds);
 
-    me.removeLocationMarkers = function() {
-        ko.utils.arrayForEach(me.locations(), function(location) {
-            location.marker().setMap(null);
+    me.removeRecomendationsMarkers = function() {
+        me.recomendationsResult().forEach(function(recomendation) {
+            recomendation.marker.setVisible(false);
         });
     };
 
@@ -100,61 +73,48 @@ var ViewModel = function() {
             location.marker().setAnimation(null);
         });
 
-        if(me.recomendationsResult.length > 0){
-            me.recomendationsResult().forEach(function(recomendation) {
-                recomendation.marker.setAnimation(null);
-            });    
-        }    
-    }
+    };
 
     //get the filtered values after typing in the input field
     me.filteredLocations = ko.computed(function() {
         var filter = me.filter().toLowerCase();
 
-        me.removeLocationMarkers(); 
         me.removeAnimations();
-        me.setInfoWindow(null, null, null);
+        me.infoWindow().close();
 
-        var result = [];
-
-        if (!filter) {
-            result = me.locations();
-        } else {
-            result = ko.utils.arrayFilter(this.locations(), function(item) {
-                return item.name().toLowerCase().indexOf(filter.toLowerCase()) !== -1;
-            });
-        }
+        var result = ko.utils.arrayFilter(this.locations(), function(item) {
+            var search ;
+            if (search = item.name().toLowerCase().indexOf(me.filter().toLowerCase()) >= 0) {
+                item.marker().setVisible(true);
+                return search;
+            } else {
+                item.marker().setVisible(false);
+            }
+        });
 
         if (result.length === 0) {
             result.push({
                 name: "No results..."
             });
-        } else {
-            result.forEach(function(data) {
-                data.marker().setMap(me.map);
-            });
         }
-        
+
         return result;
     }, me);
 
     //when click on the left panel related to Locations
     me.focusLocation = function(location) {
-        if (location !== null && location.hasOwnProperty("marker")) {            
+        if (location !== null && location.hasOwnProperty("marker")) {
             me.removeAnimations();
             me.removeRecomendationsMarkers();
-
-            me.setInfoWindow(me.getContent(location), me.map, location.marker());
-            me.map.panTo(location.marker().position);
-            location.marker().setAnimation(google.maps.Animation.BOUNCE);
             me.searchRecomendations(location);
+            me.setPanorama(location.location());
         }
     };
 
     //It is called after you click a location marker
     me.searchRecomendations = function(location) {
         params.ll = location.location().lat + "," + location.location().lng;
-        var request = $.ajax({
+        $.ajax({
             method: "GET",
             dataType: "json",
             url: url,
@@ -163,11 +123,31 @@ var ViewModel = function() {
         done(function(data) {
             me.removeRecomendationsMarkers();
             me.recomendationsResult.removeAll();
-            if (data.response !== null) {
-                var venues = data.response.venues;
-                venues.forEach(function(venue) {                    
-                    if (venue.name !== null && venue.name !== "") {                        
-                        me.recomendationsResult.push(new Recomendation(venue));
+            var response = data.response;
+            if (response !== null) {
+                var venues = response.venues;
+                var currentLocation = venues[0];
+
+                location.address(currentLocation.location.address);
+                location.url(currentLocation.url);
+                location.hereNow(currentLocation.hereNow.summary);
+                location.marker().setAnimation(google.maps.Animation.BOUNCE);
+                me.map.panTo(location.marker().position);
+
+                me.setInfoWindow(me.getContent(location), me.map, location.marker());
+
+                venues.forEach(function(venue) {
+                    if (venue !== currentLocation && venue.name !== null && venue.name !== "") {
+                        var recomendation = new Recomendation(venue);
+                        me.recomendationsResult.push(recomendation);
+
+                        recomendation.marker.addListener('click', function() {
+                            me.setOptionsRecomendation(recomendation, recomendation.marker);
+                        });
+
+                        google.maps.event.addListener(me.infoWindow(), 'closeclick', function() {
+                            recomendation.marker.setAnimation(null);
+                        });
                     }
                 });
             }
@@ -178,26 +158,28 @@ var ViewModel = function() {
     };
 
     me.focusRecomendation = function(recomendation) {
-        if (recomendation !== null && recomendation.hasOwnProperty("marker")) {            
-            var marker = recomendation.marker;
-            marker.setMap(me.map);
-            me.setOptionsRecomendation(recomendation, marker);            
-
-            marker.addListener('click', function() {
-                me.setOptionsRecomendation(recomendation, marker);            
-            });
-
-            google.maps.event.addListener(me.infoWindow(), 'closeclick', function() {
-                marker.setAnimation(null);
-            });
+        if (recomendation !== null && recomendation.hasOwnProperty("marker")) {
+            me.setOptionsRecomendation(recomendation, recomendation.marker);
         }
     };
 
-    me.setOptionsRecomendation = function(recomendation, marker){
+    me.setOptionsRecomendation = function(recomendation, marker) {
         me.removeAnimations();
+        me.setPanorama(marker.position);
         marker.setAnimation(google.maps.Animation.BOUNCE);
         me.setInfoWindow(me.getContent(recomendation), me.map, marker);
         me.map.panTo(marker.position);
+    };
+
+    me.setPanorama = function(position) {
+        panorama = new google.maps.StreetViewPanorama(
+            document.getElementById('pano'), {
+                position: position,
+                pov: {
+                    heading: 34,
+                    pitch: 10
+                }
+            });
     };
 };
 

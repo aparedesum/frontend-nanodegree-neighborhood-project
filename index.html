@@ -1,37 +1,32 @@
 <!DOCTYPE html>
 <html>
-  <head>  	
+   <head>
       <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-    	<title>Neighborhood Project</title>      
-    	<link rel="stylesheet" href="css/min/style.min.css">
-  </head>
-
-  <body>
-
-    <header class="inputFilterContainer">      
-      <input class="inputfilter" id="filter" data-bind="value: filter, valueUpdate:['afterkeydown']" placeholder="Search Location ..." autofocus />          
-    </header>
-
-    <div class="listContainer">       
-        <ul data-bind="foreach: filteredLocations">
-              <li data-bind="click: $parent.focusLocation"><span data-bind="text: name"></span></li>
-        </ul>
-        <h2>Near places</h2>
-        <div id="recomendations" class="recomendationsContainer">
-          <ul data-bind="foreach: recomendationsResult">
-              <li data-bind="click: $parent.focusRecomendation"><span data-bind="text: name"></span></li>
-        </ul>
-  
-        </div>
-    </div>
-  
-    <div id="map" class="mapContainer"></div>  
-    
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAC5OTKPt9XEwXBNmatSH2lUp8I0kr6_tg"></script>
-    <script src="js/lib/knockout-3.2.0.js"></script>
-    <script src="js/lib/jquery.min.js"></script>
-    <script src="js/min/app.min.js"></script>    
-  </body>
+      <title>Neighborhood Project</title>
+      <link rel="stylesheet" href="css/min/style.min.css">
+   </head>
+   <body>
+      <header class="inputFilterContainer">      
+         <input class="inputfilter" id="filter" data-bind="value: filter, valueUpdate:['afterkeydown']" placeholder="Search Location ..." autofocus />          
+      </header>
+      <div class="listContainer">
+         <ul data-bind="foreach: filteredLocations">
+            <li data-bind="click: $parent.focusLocation"><span data-bind="text: name"></span></li>
+         </ul>
+         <div id="recomendations" class="recomendationsContainer">
+            <h2>Near places</h2>
+            <ul data-bind="foreach: recomendationsResult">
+               <li data-bind="click: $parent.focusRecomendation"><span data-bind="text: name"></span></li>
+            </ul>
+         </div>
+      </div>
+      <div id="map" class="mapContainer"></div>
+      <div id="pano" class="pano"></div>
+      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAC5OTKPt9XEwXBNmatSH2lUp8I0kr6_tg"></script>
+      <script src="js/lib/knockout-3.2.0.js"></script>
+      <script src="js/lib/jquery.min.js"></script>
+      <script src="js/min/app.min.js"></script>    
+   </body>
 </html>
